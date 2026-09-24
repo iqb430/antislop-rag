@@ -1,6 +1,6 @@
 # ANTISLOP RAG (Existential Document Parser)
 
-A completely local, bloated-framework-free Retrieval-Augmented Generation (RAG) pipeline. Built to extract raw facts from PDFs and brutally compress them into actionable philosophy, bypassing modern AI conversational "slop".
+A completely local, bloated-framework-free Retrieval-Augmented Generation (RAG) pipeline. Built to extract raw facts from PDFs and brutally compress them into actionable philosophy, bypassing modern conversational filler.
 
 ## Core Principles
 1. **Zero LangChain:** Everything is written in raw Python (`urllib`, `chromadb`, `PyMuPDF`). Total transparency of the vector and context injection flow.
@@ -14,7 +14,7 @@ A completely local, bloated-framework-free Retrieval-Augmented Generation (RAG) 
 ## Architecture
 
 - `ingestor.py` - Parses PDFs cleanly and outputs semantic mental chunks.
-- `builder.py` - Embeds chunks into `chroma_db` using robust distance matrices.
+- `builder.py` - Embeds chunks into `chroma_db` using standard distance matrices.
 - `search.py` - Direct CLI script to retrieve Cosine Similarity scores.
 - `interrogator.py` - The final terminal UI. Injects retrieved contexts into a locked-down LLaMA prompt.
 
