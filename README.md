@@ -1,38 +1,34 @@
-# ANTISLOP RAG (Existential Document Parser)
+# Anti-Slop RAG Pipeline 💀
 
-A completely local, bloated-framework-free Retrieval-Augmented Generation (RAG) pipeline. Built to extract raw facts from PDFs and brutally compress them into actionable philosophy, bypassing modern AI conversational "slop".
+A zero-framework, deterministic Retrieval-Augmented Generation (RAG) system engineered for brutal efficiency and extreme logical constraint. Built natively in Python, this architecture completely bypasses heavy orchestration layers (like LangChain) to retain absolute granular control over token generation, semantic chunking algorithms, and inference latency.
 
-## Core Principles
-1. **Zero LangChain:** Everything is written in raw Python (`urllib`, `chromadb`, `PyMuPDF`). Total transparency of the vector and context injection flow.
-2. **Semantic Chunking:** Documents are split intelligently at the end of thoughts (paragraphs/periods), not blindly sliced at exact character limits.
-3. **Local First:** 
-   - Embedding relies on `sentence-transformers` locally.
-   - Vector Storage relies on local `ChromaDB`.
-   - Inference relies on local `Ollama` (LLaMA3/Mistral) restricted to a `0.2` temperature.
-4. **Anti-Halucination Protocol:** The system prompt forces the model to insult the user if the answer is not present in the ingested document, refusing to guess.
+## Why "Anti-Slop"?
+Modern AI outputs are plagued with "slop"—fluffy, ungrounded, and hallucinated prose ("delve", "testament to", "seamless"). This project acts as a strict cognitive cage. The RAG pipeline employs a multi-agent methodology where retrieved context acts as an unyielding boundary. The LLM is structurally forbidden from answering using its latent knowledge, enforcing a 100% faithfulness rate to the inserted vector space.
 
-## Architecture
+## Enterprise-Grade Architecture
+Unlike typical wrapper scripts, this pipeline is structured for Data Science validation and production deployment:
 
-- `ingestor.py` - Parses PDFs cleanly and outputs semantic mental chunks.
-- `builder.py` - Embeds chunks into `chroma_db` using robust distance matrices.
-- `search.py` - Direct CLI script to retrieve Cosine Similarity scores.
-- `interrogator.py` - The final terminal UI. Injects retrieved contexts into a locked-down LLaMA prompt.
+- **Algorithm-First Ingestion (`ingestor.py`):** Custom semantic boundaries (Natural Language sentence parsing) rather than blind N-character chunking, preventing context fracturing.
+- **Local Embedded Vector Space (`search.py`):** Utilizes `ChromaDB` for high-dimensional cosine similarity matching, operating entirely in-memory or on local disk (Zero API egress fees).
+- **Deterministic Interrogation (`interrogator.py`):** Synchronous REST bindings directly to a local engine (Ollama). Generation temperature is aggressively minimized to enforce factual rigidity.
+- **LLM-as-a-Judge Evaluation (`evaluator.py`):** Automated quantitative benchmarking. We treat RAG evaluation as a CI/CD metric, dynamically measuring *Faithfulness Score* and *Hallucination Rate* across an evaluation dataset.
 
-## Setup Instructions
+## The Metrics That Matter
+A RAG system is useless if it cannot be objectively measured. We implement an internal evaluation suite focusing on:
+1. **Context Relevancy (Precision@k):** Are the vectors we retrieve actually mapped to the query?
+2. **Generation Faithfulness:** Did the LLM fabricate data outside the injected context window? (Target: 1.0)
+3. **Inference Latency:** Raw compute time from query embedding to first-token generation.
 
-1. Activate your virtual environment: 
+## Usage
+*Dependencies: Python 3.10+, PyMuPDF, ChromaDB, Local Ollama Instance.*
+
 ```bash
-source venv/bin/activate
-pip install -r requirements.txt
-```
-2. Feed your document: 
-```bash
-python builder.py "path/to/your/document.pdf"
-```
-3. Interrogate the system: 
-```bash
-python interrogator.py "Your existential question here"
-```
+# 1. Ingest Unstructured Data
+python3 ingestor.py ./docs/source_material.pdf
 
----
-*Built for the IQBALOG SYS // 01 Ecosystem.*
+# 2. Run Synthetic Benchmarks
+python3 evaluator.py
+
+# 3. Interrogate the System
+python3 interrogator.py "Extract the core thesis."
+```
