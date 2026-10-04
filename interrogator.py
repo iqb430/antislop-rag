@@ -9,11 +9,9 @@ except ImportError:
     sys.exit(1)
 
 def search_db(query, final_n=3, fetch_n=10):
-    """Cari dokumen menggunakan Two-Stage Retrieval (Bi-Encoder + Cross-Encoder)."""
     client = chromadb.PersistentClient(path="./chroma_db")
     collection = client.get_collection(name="philosophy_docs")
     
-    # TAHAP 1: Bi-Encoder (Sapu Kasar 10 Kandidat)
     results = collection.query(
         query_texts=[query],
         n_results=fetch_n
@@ -23,21 +21,15 @@ def search_db(query, final_n=3, fetch_n=10):
     if not docs:
         return ""
         
-    # TAHAP 2: Cross-Encoder (Saring Jitu Re-Ranker)
     print(f"[*] RE-RANKING: Menelaah logika silang pada {len(docs)} kandidat kasar...")
-    # Menggunakan model Cross-Encoder mumpuni ringan
     reranker = CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')
     
     paired_inputs = [[query, doc] for doc in docs]
     scores = reranker.predict(paired_inputs)
     
-    # Urutkan berdasarkan skor tertinggi (Ranking 1 ke bawah)
     ranked_results = sorted(zip(scores, docs), key=lambda x: x[0], reverse=True)
-    
-    # Potong sesuai final_n yang kita butuhkan untuk masuk LLM
     top_docs = [doc for score, doc in ranked_results[:final_n]]
     
-    # Gabungin hasil teks pencarian biar jadi konteks memori
     contextText = ""
     for i, doc in enumerate(top_docs):
         contextText += f"[FACT {i+1}]: {doc}\n"

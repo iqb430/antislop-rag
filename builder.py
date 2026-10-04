@@ -12,11 +12,9 @@ def build_vector_db(pdf_path):
     
     print(f"[*] Berhasil mengekstrak {len(chunks)} dokumen pikiran.")
     
-    # Setup ChromaDB locally
     print("[*] Tahap 3: Inisialisasi ChromaDB Local dan Sentence-Transformers...")
     client = chromadb.PersistentClient(path="./chroma_db")
     
-    # We use default embedding function which utilizes all-MiniLM-L6-v2 (sentence-transformers)
     collection = client.get_or_create_collection(
         name="philosophy_docs",
         metadata={"description": "Antislop RAG knowledge base"}
@@ -24,14 +22,12 @@ def build_vector_db(pdf_path):
     
     print("[*] Tahap 4: Menginjeksi Matrix ke Database (Idempotent Hash)...")
     
-    # Perbaikan Idempotency: Hashing konten
     def generate_id(text_chunk):
         return hashlib.md5(text_chunk.encode('utf-8')).hexdigest()
         
     ids = [generate_id(chunk) for chunk in chunks]
     metadatas = [{"source": pdf_path, "chunk_hash": generate_id(chunk)} for chunk in chunks]
     
-    # Pakai upsert (Update/Insert) agar aman dari duplikasi
     collection.upsert(
         documents=chunks,
         metadatas=metadatas,
