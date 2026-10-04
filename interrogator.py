@@ -2,22 +2,44 @@ import chromadb
 import urllib.request
 import json
 import sys
+try:
+    from sentence_transformers import CrossEncoder
+except ImportError:
+    print("[!] ERROR: Modul sentence-transformers belum di-install. Jalankan 'pip install sentence-transformers'")
+    sys.exit(1)
 
-def search_db(query, n_results=3):
-    """Cari dokumen paling relevan di Vector Database lokal."""
+def search_db(query, final_n=3, fetch_n=10):
+    """Cari dokumen menggunakan Two-Stage Retrieval (Bi-Encoder + Cross-Encoder)."""
     client = chromadb.PersistentClient(path="./chroma_db")
     collection = client.get_collection(name="philosophy_docs")
     
+    # TAHAP 1: Bi-Encoder (Sapu Kasar 10 Kandidat)
     results = collection.query(
         query_texts=[query],
-        n_results=n_results
+        n_results=fetch_n
     )
+    
+    docs = results['documents'][0]
+    if not docs:
+        return ""
+        
+    # TAHAP 2: Cross-Encoder (Saring Jitu Re-Ranker)
+    print(f"[*] RE-RANKING: Menelaah logika silang pada {len(docs)} kandidat kasar...")
+    # Menggunakan model Cross-Encoder mumpuni ringan
+    reranker = CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')
+    
+    paired_inputs = [[query, doc] for doc in docs]
+    scores = reranker.predict(paired_inputs)
+    
+    # Urutkan berdasarkan skor tertinggi (Ranking 1 ke bawah)
+    ranked_results = sorted(zip(scores, docs), key=lambda x: x[0], reverse=True)
+    
+    # Potong sesuai final_n yang kita butuhkan untuk masuk LLM
+    top_docs = [doc for score, doc in ranked_results[:final_n]]
     
     # Gabungin hasil teks pencarian biar jadi konteks memori
     contextText = ""
-    docs = results['documents'][0]
-    
-    for i, doc in enumerate(docs):
+    for i, doc in enumerate(top_docs):
         contextText += f"[FACT {i+1}]: {doc}\n"
         
     return contextText

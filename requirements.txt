@@ -1,3 +1,4 @@
 PyMuPDF==1.23.21
 chromadb
 sentence-transformers
+sentence-transformers>=2.3.0
