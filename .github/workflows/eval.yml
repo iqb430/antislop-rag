@@ -9,7 +9,7 @@ jobs:
   evaluate:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -25,7 +25,7 @@ jobs:
       run: |
         python evaluate_rag.py
     - name: Upload Evaluation Results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: eval-results
         path: eval_results.csv
