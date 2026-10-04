@@ -40,8 +40,20 @@ def semantic_chunking(text, min_length=200, max_length=800):
         if len(current_chunk) >= max_length:
             last_period = current_chunk.rfind('. ')
             if last_period != -1 and last_period > min_length:
-                chunks.append(current_chunk[:last_period+1].strip())
-                current_chunk = current_chunk[last_period+1:].strip()
+                chunk_str = current_chunk[:last_period+1].strip()
+                chunks.append(chunk_str)
+                
+                # SLIDING WINDOW LOGIC (OVERLAP)
+                # Kita ambil 1 kalimat terakhir dari chunk_str untuk dijadikan lem jembatan (overlap)
+                # rfind dilakukan setelah menghilangkan titik terakhir [:-1] agar tidak menangkap dirinya sendiri
+                prev_period = chunk_str[:-1].rfind('. ')
+                if prev_period != -1:
+                    overlap_sentence = chunk_str[prev_period+2:].strip()
+                else:
+                    overlap_sentence = chunk_str  # Jika cuma 1 kalimat super panjang, pakai semua
+                    
+                # Chunk selanjutnya dimulai dari Overlap + Sisa kalimat yang terputus
+                current_chunk = overlap_sentence + " " + current_chunk[last_period+1:].strip()
             else:
                 chunks.append(current_chunk.strip())
                 current_chunk = ""
