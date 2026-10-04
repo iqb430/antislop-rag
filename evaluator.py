@@ -34,16 +34,13 @@ class RAGEvaluator:
             return "error"
 
     def measure_faithfulness(self, context: str, answer: str) -> float:
-        """
-        1.0 = All claims are backed by context.
-        0.0 = Hallucination detected.
-        """
         eval_prompt = (
             "You are an objective metric scoring system. "
             f"Context: {context}\n"
             f"Generated Answer: {answer}\n"
-            "Does the Generated Answer contain information that is NOT present in the Context? "
-            "Reply strictly with 'yes' if there is hallucination, or 'no' if it is perfectly grounded."
+            "Analyze if the factual claims in the Generated Answer contradict or invent facts outside the Context. "
+            "Ignore stylistic insults, blunt tone, or explicit refusals to answer. Focus purely on factual fabrication. "
+            "Reply strictly with 'yes' if there is an objective factual hallucination, or 'no' if the factual claims are grounded or if the answer is a safe refusal."
         )
         verdict = self._llm_as_a_judge(eval_prompt)
         return 0.0 if "yes" in verdict else 1.0

@@ -8,6 +8,9 @@ except ImportError:
     print("[!] ERROR: Modul sentence-transformers belum di-install. Jalankan 'pip install sentence-transformers'")
     sys.exit(1)
 
+print("[*] Init: Loading Cross-Encoder Model into Memory...")
+global_reranker = CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')
+
 def search_db(query, final_n=3, fetch_n=10):
     client = chromadb.PersistentClient(path="./chroma_db")
     collection = client.get_collection(name="philosophy_docs")
@@ -22,10 +25,9 @@ def search_db(query, final_n=3, fetch_n=10):
         return ""
         
     print(f"[*] RE-RANKING: Menelaah logika silang pada {len(docs)} kandidat kasar...")
-    reranker = CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')
     
     paired_inputs = [[query, doc] for doc in docs]
-    scores = reranker.predict(paired_inputs)
+    scores = global_reranker.predict(paired_inputs)
     
     ranked_results = sorted(zip(scores, docs), key=lambda x: x[0], reverse=True)
     top_docs = [doc for score, doc in ranked_results[:final_n]]

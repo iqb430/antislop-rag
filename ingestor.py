@@ -16,7 +16,9 @@ def extract_pdf_clean(pdf_path):
 
 def semantic_chunking(text, min_length=200, max_length=800):
     print("[*] Menjalankan Semantic Chunking...")
+    text = re.sub(r'([^\n])\n([^\n])', r'\1 \2', text)
     paragraphs = re.split(r'\n\s*\n', text)
+    
     chunks = []
     current_chunk = ""
     
