@@ -1,4 +1,5 @@
 import chromadb
+import hashlib
 from ingestor import extract_pdf_clean, semantic_chunking
 import sys
 
@@ -21,15 +22,22 @@ def build_vector_db(pdf_path):
         metadata={"description": "Antislop RAG knowledge base"}
     )
     
-    print("[*] Tahap 4: Menginjeksi Matrix ke Database...")
-    ids = [f"chunk_{i}" for i in range(len(chunks))]
-    metadatas = [{"source": pdf_path, "chunk_index": i} for i in range(len(chunks))]
+    print("[*] Tahap 4: Menginjeksi Matrix ke Database (Idempotent Hash)...")
     
-    collection.add(
+    # Perbaikan Idempotency: Hashing konten
+    def generate_id(text_chunk):
+        return hashlib.md5(text_chunk.encode('utf-8')).hexdigest()
+        
+    ids = [generate_id(chunk) for chunk in chunks]
+    metadatas = [{"source": pdf_path, "chunk_hash": generate_id(chunk)} for chunk in chunks]
+    
+    # Pakai upsert (Update/Insert) agar aman dari duplikasi
+    collection.upsert(
         documents=chunks,
         metadatas=metadatas,
         ids=ids
     )
+
     
     print(f"[+] SELESAI. {len(chunks)} vektor pikiran udah dikunci ke ./chroma_db/")
     print(f"[*] Coba cari pakai query: python search.py 'makna hidup'")
