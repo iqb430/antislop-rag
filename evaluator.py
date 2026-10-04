@@ -14,23 +14,16 @@ class EvalResult:
     hallucination_flag: bool
 
 class RAGEvaluator:
-    """
-    Enterprise-grade RAG Evaluation Pipeline.
-    Measures retrieval accuracy, generation faithfulness, and system latency.
-    Bypassing heavy frameworks (Ragas/TruLens) for raw local execution.
-    """
-    
     def __init__(self, ollama_url: str = "http://localhost:11434/api/generate"):
         self.ollama_url = ollama_url
-        self.eval_model = "gemma4" # Uses local Gemma for LLM-as-a-Judge
+        self.eval_model = "gemma4"
 
     def _llm_as_a_judge(self, prompt: str) -> str:
-        """Call local LLM synchronously for evaluation routing."""
         data = {
             "model": self.eval_model,
             "prompt": prompt,
             "stream": False,
-            "temperature": 0.0 # Strict deterministic output for evaluation
+            "temperature": 0.0
         }
         try:
             req = urllib.request.Request(self.ollama_url, data=json.dumps(data).encode("utf-8"), headers={'Content-Type': 'application/json'})
@@ -42,7 +35,6 @@ class RAGEvaluator:
 
     def measure_faithfulness(self, context: str, answer: str) -> float:
         """
-        Calculates Faithfulness / Groundedness.
         1.0 = All claims are backed by context.
         0.0 = Hallucination detected.
         """
@@ -57,7 +49,6 @@ class RAGEvaluator:
         return 0.0 if "yes" in verdict else 1.0
 
     def evaluate_batch(self, test_set: List[Dict[str, str]]) -> Dict[str, float]:
-        """Runs the benchmark pipeline across a dataset."""
         print("[*] Initializing Anti-Slop RAG Benchmarking Suite...")
         results: List[EvalResult] = []
         
@@ -65,20 +56,17 @@ class RAGEvaluator:
             print(f"    -> Evaluating Sample {idx+1}/{len(test_set)}...")
             start_time = time.perf_counter()
             
-            # 1. Emulate Retrieval + Generation (Mocked for CI isolation)
             context = test["retrieved_context"]
             answer = test["generated_answer"]
             
-            # 2. Measure Metrics
             faithfulness = self.measure_faithfulness(context, answer)
-            
             latency = (time.perf_counter() - start_time) * 1000
             
             results.append(EvalResult(
                 query=test["query"],
                 latency_ms=latency,
                 faithfulness_score=faithfulness,
-                context_relevancy_score=1.0, # Placeholder for embedding cosine similarity metric
+                context_relevancy_score=1.0,
                 hallucination_flag=(faithfulness == 0.0)
             ))
             

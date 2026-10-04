@@ -14,14 +14,8 @@ except ImportError:
     exit(1)
 
 def run_evaluation(eval_dataset_path="eval_data.json"):
-    """
-    Automated LLM evaluation pipeline using Ragas.
-    This evaluates the Retrieval-Augmented Generation (RAG) pipeline
-    for faithfulness, answer relevancy, context precision, and context recall.
-    """
     print("[*] Starting Automated RAG Evaluation with Ragas...")
     
-    # Load evaluation dataset
     if not os.path.exists(eval_dataset_path):
         print(f"[!] Evaluation dataset '{eval_dataset_path}' not found.")
         print("[*] Creating a dummy evaluation dataset for demonstration...")
@@ -40,7 +34,6 @@ def run_evaluation(eval_dataset_path="eval_data.json"):
     dataset = Dataset.from_dict(data)
     
     print("[*] Running evaluation metrics...")
-    # NOTE: In a real environment, you need OPENAI_API_KEY or a local LLM configured for Ragas.
     try:
         result = evaluate(
             dataset,
@@ -54,12 +47,10 @@ def run_evaluation(eval_dataset_path="eval_data.json"):
         print("\n[+] Evaluation Results:")
         print(result)
         
-        # Save results
         result.to_pandas().to_csv("eval_results.csv", index=False)
         print("[+] Results saved to eval_results.csv")
     except Exception as e:
         print(f"[!] Evaluation failed (possibly missing API keys or local LLM setup for Ragas): {e}")
-        print("[*] Ensure OPENAI_API_KEY is set or configure Ragas to use a local LLM.")
 
 if __name__ == "__main__":
     run_evaluation()
