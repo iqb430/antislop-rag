@@ -1,4 +1,4 @@
--e pytest
+pytest
 pytest-cov
 ragas
 datasets

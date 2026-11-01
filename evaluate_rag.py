@@ -51,6 +51,11 @@ def run_evaluation(eval_dataset_path="eval_data.json"):
         print("[+] Results saved to eval_results.csv")
     except Exception as e:
         print(f"[!] Evaluation failed (possibly missing API keys or local LLM setup for Ragas): {e}")
+        with open("eval_results.csv", "w", encoding="utf-8") as f:
+            f.write("question,status,error\n")
+            q = data.get("question", [""])[0].replace('"', "'")
+            err_msg = str(e).replace('"', "'")
+            f.write(f'"{q}",skipped,"{err_msg}"\n')
 
 if __name__ == "__main__":
     run_evaluation()
